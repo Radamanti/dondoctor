@@ -242,54 +242,50 @@ def run_quality_checks(silver) -> pd.DataFrame:
 
     return pd.DataFrame(results)
 
-# ============================================================
 # EJECUCIÓN DEL PIPELINE SILVER
-# ============================================================
+def ejec_silver():
+    BRONZE_DIR = Path("data/processed/bronze")
+    df_norte = pd.read_csv(BRONZE_DIR/"ips_norte_citas.csv",sep=",",encoding="UTF-8")
+    df_occidente = pd.read_csv(BRONZE_DIR/"ips_occidente_citas.csv",sep=";",encoding="UTF-8")
+    df_sur = pd.read_csv(BRONZE_DIR/"ips_sur_citas.csv",sep=",",encoding="UTF-8")
 
-BRONZE_DIR = Path("data/processed/bronze")
-df_norte = pd.read_csv(BRONZE_DIR/"ips_norte_citas.csv",sep=",",encoding="UTF-8")
-df_occidente = pd.read_csv(BRONZE_DIR/"ips_occidente_citas.csv",sep=";",encoding="UTF-8")
-df_sur = pd.read_csv(BRONZE_DIR/"ips_sur_citas.csv",sep=",",encoding="UTF-8")
+    raw_dataframes = {
+        "ips_norte_citas.csv": df_norte,
+        "ips_occidente_citas.csv": df_occidente,
+        "ips_sur_citas.csv": df_sur,
+    }
 
-raw_dataframes = {
-    "ips_norte_citas.csv": df_norte,
-    "ips_occidente_citas.csv": df_occidente,
-    "ips_sur_citas.csv": df_sur,
-}
+    silver = build_silver(raw_dataframes)
 
-silver = build_silver(raw_dataframes)
+    print("\n===== SILVER =====")
+    print(f"Filas: {len(silver)}")
+    print(f"Columnas: {len(silver.columns)}")
 
-print("\n===== SILVER =====")
-print(f"Filas: {len(silver)}")
-print(f"Columnas: {len(silver.columns)}")
+    print("\nColumnas:")
+    print(silver.columns.tolist())
 
-print("\nColumnas:")
-print(silver.columns.tolist())
+    # Perfilamiento
+    print("\n===== PERFILAMIENTO =====")
+    silver_report = profile_silver(silver)
+    for key, value in silver_report.items():
+        print(f"{key}: {value}")
 
-# Perfilamiento
-print("\n===== PERFILAMIENTO =====")
+    # Quality checks
+    print("\n===== QUALITY CHECKS =====")
+    quality_results = run_quality_checks(silver)
+    print(quality_results)
 
-silver_report = profile_silver(silver)
+    SILVER_DIR = Path("data/processed/silver")
+    SILVER_DIR.mkdir(parents=True, exist_ok=True)
 
-for key, value in silver_report.items():
-    print(f"{key}: {value}")
+    SILVER_PATH = SILVER_DIR / "silver_appointments.parquet"
 
-# Quality checks
-print("\n===== QUALITY CHECKS =====")
+    silver.to_parquet(SILVER_PATH,index=False)
 
-quality_results = run_quality_checks(silver)
+    print("\n===== SILVER GUARDADO =====")
+    print(f"Archivo: {SILVER_PATH}")
+    print(f"Filas: {len(silver):,}")
+    print(f"Columnas: {len(silver.columns):,}")
 
-print(quality_results)
-
-# Mostrar primeras filas
-print("\n===== SAMPLE =====")
-
-print(
-    silver[
-        [
-            "tenant_id",
-            "cita_id",
-            "appointment_key"
-        ]
-    ].head(20)
-)
+if __name__ == "__main__":
+    ejec_silver
