@@ -5,13 +5,16 @@ from src.pipeline.build_bronze import prepare_bronze
 from src.pipeline.build_silver import ejec_silver
 from src.pipeline.build_gold import build_gold
 
+from src.profiling.profile_data import main as mainprofiling
+
 
 SILVER_PATH = Path("data/processed/silver/silver_appointments.parquet")
 GOLD_DIR = Path("data/processed/gold")
 GOLD_DIR.mkdir(parents=True, exist_ok=True)
 
-prepare_bronze
-ejec_silver
+mainprofiling()
+prepare_bronze()
+ejec_silver()
 silver = pd.read_parquet(SILVER_PATH)
 
 # CONSTRUIR GOLD
