@@ -28,4 +28,4 @@ De igual manera, los destinos de las salidas generadas por el proyecto
 
 ## Ejecución
 
-Pendiente de completar durante el desarrollo.
+Se debe realizar la ejecución del archivo main.py
